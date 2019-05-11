@@ -1,0 +1,12 @@
+   0.0 TEL | Telepresence 0.98 launched at Thu May  9 21:11:29 2019
+   0.0 TEL |   /usr/local/bin/telepresence --method inject-tcp --swap-deployment backend --expose 4001 --run node ./index.js
+   0.0 TEL | Platform: darwin
+   0.0 TEL | Python 3.7.3 (default, Mar 27 2019, 09:23:39)
+   0.0 TEL | [Clang 10.0.0 (clang-1000.11.45.5)]
+   0.0 TEL | [1] Running: uname -a
+   0.0   1 | Darwin pvergadia-macbookpro3.roam.corp.google.com 18.5.0 Darwin Kernel Version 18.5.0: Mon Mar 11 20:40:32 PDT 2019; root:xnu-4903.251.3~3/RELEASE_X86_64 x86_64
+   0.0 TEL | [1] ran in 0.03 secs.
+   0.1 TEL | BEGIN SPAN main.py:40(main)
+   0.1 TEL | BEGIN SPAN startup.py:74(__init__)
+   0.1 TEL | Found kubectl -> /Users/pvergadia/google-cloud-sdk/bin/kubectl
+   0.1 TEL | [2] Capturing: kubectl version --short

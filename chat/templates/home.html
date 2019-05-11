@@ -1,0 +1,114 @@
+{% load staticfiles %}
+<html>
+  <head>
+    <title>Django Dialogflow</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}"/>
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="page-header text-center">
+        <h1>Dialogflow</h1>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+          <ul class="list-group js-chat-log">
+          </ul>
+
+          <div class="input-group input-group-lg">
+            <span class="input-group-btn">   
+              <button class="btn btn-primary js-say">Submit</button>
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/js.cookie.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    <script>
+      var $chatlog = $('.js-chat-log');
+      var $input = $('.js-text');
+      var formData = new FormData(this);
+
+      var $sayButton = $('.js-say');
+      var dialogflowUrl = '{% url "index" %}';
+      var csrftoken = Cookies.get('csrftoken');
+
+      function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+      }
+
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+        }
+      });
+
+      function createRow(text) {
+        var $row = $('<li class="list-group-item"></li>');
+        var list = '<li class="list-group-item">'
+         var k = text.split("\n")
+
+         for(i=0;i<k.length;i++) {
+             list += k[i]+"<br />"
+         }
+
+        list = list + "</li>"
+        $row.text(list);
+        $chatlog.append(list);
+        //$chatlog.append(text);
+      }
+
+      window.onload = createRow('<b><font size="4" face="Lucida Console">Chat with Dialogflow</font></b>');
+
+      function submitInput() {
+        var inputData = {
+          'text': $input.val()
+          
+        }
+        // Display the user's input on the web page
+        createRow(inputData.text);
+        var dialogflowChatUrl = '{% url "chat-home" %}';
+        var $submit = $.ajax({
+          type: 'POST',
+          url: dialogflowChatUrl,
+          data: JSON.stringify(inputData),
+          contentType: 'application/json',
+        });
+
+
+
+        $submit.done(function(statement) {
+            //createRow(statement.text);
+            createRow(statement);
+            console.log("this is", statement)
+            // Clear the input field
+            $input.val('');
+        });
+
+        $submit.fail(function() {
+          // TODO: Handle errors
+        });
+      }
+
+      $sayButton.click(function() {
+        submitInput();
+      });
+
+      $input.keydown(function(event) {
+        // Submit the input when the enter button is pressed
+        if (event.keyCode == 13) {
+          submitInput();
+        }
+      });
+    </script>
+  </body>
+</html>
