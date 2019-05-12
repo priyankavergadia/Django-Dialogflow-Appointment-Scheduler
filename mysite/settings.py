@@ -98,10 +98,10 @@ if os.getenv('GAE_APPLICATION', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/as-testing-7e213:us-central1:polls-instance',
-            'USER': 'test',
-            'PASSWORD': 'test',
-            'NAME': 'polls',
+            'HOST': '/cloudsql/[PROJECT_NAME]:[REGION_NAME]:[INSTANCE_NAME]',
+            'USER': '[YOUR-USERNAME]',
+            'PASSWORD': '[YOUR-PASSWORD]',
+            'NAME': '[YOUR-DATABASE]',
         }
     }
 else:
@@ -116,9 +116,9 @@ else:
             'ENGINE': 'django.db.backends.mysql',
             'HOST': '127.0.0.1',
             'PORT': '3306',
-            'NAME': 'polls',
-            'USER': 'test',
-            'PASSWORD': 'test'
+            'NAME': '[YOUR-DATABASE]',
+            'USER': '[YOUR-USERNAME]',
+            'PASSWORD': '[YOUR-PASSWORD]'
         }
     }
 # [END db_setup]
