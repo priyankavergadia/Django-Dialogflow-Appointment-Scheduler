@@ -35,7 +35,7 @@ def chat_view(request):
     path = os.path.join(current_directory, GOOGLE_AUTHENTICATION_FILE_NAME)
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
 
-    GOOGLE_PROJECT_ID = "appointmentscheduler-af48c"
+    GOOGLE_PROJECT_ID = "<YOUR_PROJECT_ID>"
     session_id = "1234567891"
     context_short_name = "does_not_matter"
 
