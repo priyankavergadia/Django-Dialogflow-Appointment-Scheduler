@@ -2,206 +2,142 @@
 
 Django [Dialogflow](https://dialogflow.com) is a web client to chat with Dialogflow agent Appointment Scheduler.
 
+![alt text](app-image.png)
 
-## Table of contents
+## Setup Instructions
 
-1. [URLs](#URLs)
-2. [Sync your database](#sync-your-database)
-3. [Production your BOT](#production-your-bot)
-4. [Installation](#installation)
-5. [Configuring Webservice](#configuring-webservice)
-6. [Deploying on Heroku](#deploying-on-heroku)
-7. [Examples](#examples)
-8. [Motivation](#motivation)
-9. [License](#license)
-10. [Contributing](#contributing)
+Download the sample dhjango appengine app from [GCP Python Docs Samples](https://github.com/GoogleCloudPlatform/python-docs-samples/tree/master/appengine/standard_python37/django)
 
-## URLs
+### Download and run the app
+The following sections guide you through configuring, running, and deploying the sample.
 
-You will need to add below steps to your [urls.py](./django_dialogflow/urls.py)
+Clone the Django app
 
-``` Python
-urlpatterns = [
-    path('chat/', include('chat.urls')),
-    path('admin/', admin.site.urls),
-]
+Clone the repository to your local machine:
 
-```
+git clone https://github.com/GoogleCloudPlatform/python-docs-samples.git
+Go to the directory that contains the sample code:
 
-The endpoint expects a JSON request with the following data:
+cd python-docs-samples/appengine/standard_python37/django
+Alternatively, you can download the sample as a zip and extract it.
 
-``` Python
-{"text": "My input statement"}
-```
+### Setting up your local environment
+When deployed, your app uses the Cloud SQL Proxy that is built in to the App Engine environment to communicate with your Cloud SQL instance. However, to test your app locally, you must install and use a local copy of the Cloud SQL Proxy in your development environment.
 
-See detailed example how retrieve end point translated information [app.html](.django_dialogflow/django_dialogflow/templates/app.html)
+Learn more about the Cloud SQL Proxy [here](https://cloud.google.com/sql/docs/mysql/sql-proxy).
 
+To perform basic admin tasks on your Cloud SQL instance, you can use the MySQL client.
 
-## Sync your database
+Note: You must authenticate gcloud to use the proxy to connect from your local machine.
 
-In order to persists your data you need to create the necessary ``django_dialogflow`` tables. 
+#### Install the Cloud SQL Proxy
+Download and install the Cloud SQL Proxy. The Cloud SQL Proxy is used to connect to your Cloud SQL instance when running locally.
 
-For generating schema migrations, you have to run these steps.
+Download the proxy:
+curl -o cloud_sql_proxy https://dl.google.com/cloudsql/cloud_sql_proxy.darwin.amd64
 
-``` Bash
-$ python manage.py migrate django_dialogflow
-```
+Make the proxy executable:
+chmod +x cloud_sql_proxy
 
-## Production your Bot
+#### Create a Cloud SQL instance
+Create a Cloud SQL for MySQL Second Generation instance. Name the instance polls-instance or similar. It can take a few minutes for the instance to be ready. After the instance is ready, it should be visible in the instances list.
+Be sure to create a Second Generation instance.
+Now use the Cloud SDK to run the following command where [YOUR_INSTANCE_NAME] represents the name of your Cloud SQL instance. Make a note of the value shown for connectionName for the next step.
+gcloud sql instances describe [YOUR_INSTANCE_NAME]
+The connectionName value is in the format [PROJECT_NAME]:[REGION_NAME]:[INSTANCE_NAME].
 
-### Configuring Dialogflow
+#### Initialize your Cloud SQL instance
+Start the Cloud SQL Proxy using the connectionName from the previous step.
+./cloud_sql_proxy -instances="[YOUR_INSTANCE_CONNECTION_NAME]"=tcp:3306
+Replace [YOUR_INSTANCE_CONNECTION_NAME] with the value of connectionName that you recorded in the previous step.
 
-To comunicate with Dialogflow you need get a [client access token](https://dialogflow.com/docs/reference/agent/#using_access_tokens), 
+This step establishes a connection from your local computer to your Cloud SQL instance for local testing purposes. Keep the Cloud SQL Proxy running the entire time you test your app locally.
 
-Then go to [settings.py](./django_dialogflow/settings.py) update your ``client_access_token`` in ``settings.py``
+Next you create a new Cloud SQL user and database.
+Create a new database using the GCP Console for your Cloud SQL instance polls-instance. For example, you can use the name polls.
+Create a new user using the GCP Console for your Cloud SQL instance polls-instance.
 
-``` Python
-# Dialogflow settings
-DIALOGFLOW = {
-    'client_access_token': 'e5dc21cab6df451c866bf5efacb40178',
-}
-```
+#### Configure the database settings
+1. Open mysite/settings.py for editing.
+2. In two places, replace [YOUR-USERNAME] and [YOUR-PASSWORD] with the database username and password you created previously in the step "Create a Cloud SQL instance". This helps set up the connection to the database for both App Engine deployment and local testing.
+3. Run the following command. Copy the outputted connectionName value for the next step.
+4. gcloud sql instances describe [YOUR_INSTANCE_NAME]
+5. Replace [YOUR-CONNECTION-NAME] with connectionName from the previous step.
+6. Replace [YOUR-DATABASE] with the name you choose during the "Initialize your Cloud SQL instance" step.
+7. Close and save settings.py.
 
-### ALLOWD_HOSTS
+### Service Account Setup
+1. In Dialogflow's console, go to settings ⚙ and under the general tab, you'll see the project ID section with a Google Cloud link to open the Google Cloud console. Open Google Cloud.
+2. In the Cloud console, go to the menu icon ☰ > APIs & Services > Credentials
+3. Under the menu icon ☰ > APIs & Services > Credentials > Create Credentials > Service Account Key.
+4. Under Create service account key, select New Service Account from the dropdown and enter. If you already have a service account key, select that. 
+5. AppointmentCalendar for the name and click Create. In the popup, select Create Without Role.
+6. JSON file will be downloaded to your computer that you will need in the setup sections below.
 
-Modify Django Allowed hosts to access your application everywhere, to do this modify [settings.py](./django_dialogflow/settings.py) as suggested below
+### Set up Dialogflow DetectIntent endpoint to be called from the App
+1. Inside chat folder, replace the AppointmentScheduler.json with your own credentials json file. 
+2. In views.py in chat folder, Change the GOOGLE_PROJECT_ID = "<YOUR PROJECT ID HERE>" to your project ID
 
-``` Python
-ALLOWED_HOSTS = ['A.B.C.D', 'localhost']
-```
+### Build and run the app locally
+To run the Django app on your local computer, you'll need to set up a Python development environment, including Python, pip, and virtualenv. For instructions, refer to Setting Up a Python Development Environment for Google Cloud Platform.
 
-### CORS_ORIGIN_WHITELIST
+Create an isolated Python environment, and install dependencies:
 
-Cross-origin resource sharing (CORS) is a mechanism that allows restricted resources (e.g. fonts) on a web page to be requested from another domain outside the domain from which the first resource was served.
-
-To do this modify [settings.py](./django_dialogflow/settings.py) as suggested below
-
-``` Python
-CORS_ORIGIN_WHITELIST = (
-    'A.B.C.D:9000',
-)
-```
-
-### Deploy
-
-``` Bash
-python manage.py runserver 0.0.0.0:8000
-```
-
-Further documentation on Dialogflow can be found here https://dialogflow.com/
-
-## Installation
-
-If you are trying use ``django_dialogflow`` as app,
-
-Then you could install ``django-dialogflow`` either via the Python Package Index (PyPI) or from GitHub source.
-
-To install using pip :
-
-``` Bash
-$ pip install django-dialogflow
-```
-
-and then add it to your installed apps in your settings.py:
-
-``` Bash
-INSTALLED_APPS = (
-    ...
-    'django_dialogflow',
-    ...
-)
-```
-
-
-## Configuring Webservice
-
-If you want to host your Django app, then you need to choose a method through which it will be hosted. There are a few free services that you can use to do this such as [Heroku](https://dashboard.heroku.com/) and [PythonAnyWhere](https://www.pythonanywhere.com/details/django_hosting).
-
-Some basic Heroku deployment instrction are found below.
-
-### WSGI
-
-A common method for serving Python web applications involves using a Web Server Gateway Interface (WSGI) package.
-
-Gunicorn is a great choice for a WSGI server. They have detailed documentation and installation instructions on their website.
-
-### Hosting static files
-
-There are numerous ways to host static files for your Django application. One extreemly easy way to do this is by using WhiteNoise, a python package designed to make it possible to serve static files from just about any web application.
-
-## Deploying on Heroku
-
-Here are some of the steps to lauch your Django app with Heroku
-
-### Build your app and run it locally
-
-``` bash
+virtualenv env
+source env/bin/activate
 pip install -r requirements.txt
-Downloading/unpacking ...
-...
-Successfully installed Django dj-database-url dj-static django-toolbelt gunicorn psycopg2 static3
-Cleaning up...
-```
+Run the Django migrations to set up your models:
 
-### To run your application locally,
+python3 manage.py makemigrations
+python3 manage.py makemigrations polls
+python3 manage.py migrate
+Start a local web server:
 
-``` bash
-heroku local web
-11:48:19 web.1  | started with pid 36084
-11:48:19 web.1  | 2014-07-17 11:48:19 [36084] [INFO] Starting gunicorn 19.0.0
-11:48:19 web.1  | 2014-07-17 11:48:19 [36084] [INFO] Listening at: http://0.0.0.0:5000 (36084)
-11:48:19 web.1  | 2014-07-17 11:48:19 [36084] [INFO] Using worker: sync
-11:48:19 web.1  | 2014-07-17 11:48:19 [36087] [INFO] Booting worker with pid: 36087
-```
-Your app should now be avaliable and running on http://localhost:5000/.
+python3 manage.py runserver
+In your web browser, enter this address:
 
-### Deploy your application on Heroku
+http://localhost:8000
+You should see a simple webpage with the following text: "Hello, world. You're at the polls index." The sample app pages are delivered by the Django web server running on your computer. When you're ready to move forward, press Ctrl+C to stop the local web server.
 
-``` Bash
-git add .
+### Use the Django admin console
+Create a superuser:
 
-git commit -m "Added a Procfile."
+python3 manage.py createsuperuser
+Start a local web server:
 
-heroku login
-Enter your Heroku credentials.
-...
+python3 manage.py runserver
+Enter this address in your web browser. To log on to the admin site, use the username and password you created when you ran createsuperuser.
 
-heroku create
-Creating intense-falls-9163... done, stack is cedar
-http://intense-falls-9163.herokuapp.com/ | git@heroku.com:intense-falls-9163.git
-Git remote heroku added
+http://localhost:8000/admin/
 
-git push heroku master
-...
------> Python app detected
-...
------> Launching... done, v7
-       https://intense-falls-9163.herokuapp.com/ deployed to Heroku
-```
+### Deploy the app to the App Engine standard environment
+Gather all the static content into one folder. This command moves all of the app's static files into the folder specified by STATIC_ROOT in settings.py:
 
-Much more detailed information can be found here https://devcenter.heroku.com/articles/deploying-python
+python3 manage.py collectstatic
+Upload the app by running the following command from within the python-docs-samples/appengine/standard/django directory of the application where the app.yaml file is located:
 
-## Using the development version
+gcloud app deploy
+Wait for the message that notifies you that the update has completed.
 
-You can clone the git repository by doing the following:
 
-``` Bash
-$ git clone git://github.com/vkosuri/django-dialogflow.git
-```
+### See the app run in the cloud
+In your web browser, enter this address:
 
-## Examples
+https://<your_project_id>.appspot.com
+This time, your request is served by a web server running in the App Engine standard environment.
 
-All [examples](./examples) are located here Github repo
+This command deploys the application as described in app.yaml and sets the newly deployed version as the default version, causing it to serve all new traffic.
 
-## Motivation
 
-https://github.com/gunthercox/django_chatterbot
+### Production
+When you are ready to serve your content in production, make the following configuration change:
 
-## LICENSE
-Licensed under [MIT](./LICENSE.md)
+In mysite/settings.py, change the DEBUG variable to False.
 
-## Contributing
 
-Development of django_dialogflow happens at Github: http://github.com/vkosuri/django-dialogflow
+### References
 
-You are highly encouraged to participate in the development. If you don't like Github (for some reason) you're welcome to send regular patches.
+[Django app on Appengine](https://cloud.google.com/python/django/appengine)
+
+### LICENSE
+Licensed under [Apache2.0](./LICENSE.md)
