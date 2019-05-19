@@ -5,7 +5,7 @@ Django [Dialogflow](https://dialogflow.com) is a web client to chat with Dialogf
 ![alt text](app-image.png)
 
 ## Architecture
-![alt text](architecture-image.png)
+![alt text](Architecture-image.png)
 
 ## Setup Instructions
 
