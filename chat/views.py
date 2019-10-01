@@ -7,6 +7,7 @@ from django.views.decorators.http import require_http_methods
 import dialogflow
 import os
 import json
+from django.views.decorators.csrf import csrf_exempt
 #from dialogflow_v2 import dialogflow_v2 as Dialogflow
 # Create your views here.
 
@@ -24,6 +25,7 @@ def convert(data):
 
     return data
 
+@csrf_exempt
 @require_http_methods(['POST'])
 def chat_view(request):
     print('Body', request.body)
