@@ -18,6 +18,7 @@
           </ul>
 
           <div class="input-group input-group-lg">
+            <input type="text" class="form-control js-text" placeholder="Type Hi to begin.">
             <span class="input-group-btn">   
               <button class="btn btn-primary js-say">Submit</button>
             </span>
@@ -33,7 +34,7 @@
     <script>
       var $chatlog = $('.js-chat-log');
       var $input = $('.js-text');
-      var formData = new FormData(this);
+      var formData = new FormData();
 
       var $sayButton = $('.js-say');
       var dialogflowUrl = '{% url "index" %}';
